@@ -146,15 +146,37 @@ export default function WeatherChat() {
         }
     }, [messages, loading]);
 
+    // Determines appropriate loading message based on user input
+    const getLoadingMessage = (text) => {
+        const lowerText = text.toLowerCase();
+        if (lowerText.match(/\b(hi|hello|hey|sup|greetings|howdy)\b/)) {
+            return "Thinking";
+        }
+        if (lowerText.includes("rain")) {
+            return "Checking rain forecast";
+        }
+        if (lowerText.includes("temperature") || lowerText.includes("temp")) {
+            return "Getting temperature";
+        }
+        if (lowerText.includes("forecast") || lowerText.includes("week")) {
+            return "Fetching forecast";
+        }
+        if (lowerText.match(/\b(weather|wind|cloud|sun|storm|sunny|cloudy)\b/)) {
+            return "Checking weather";
+        }
+        return "Thinking";
+    };
+
     // Sends user input to the weather agent API and appends agent response to chat
     const sendMessage = async () => {
         if (!input.trim() || loading) return;
 
         const userText = input;
+        const loadingMsg = getLoadingMessage(userText);
 
         setMessages((prev) => [
             ...prev,
-            { role: "user", content: userText },
+            { role: "user", content: userText, loadingMsg },
         ]);
 
         setInput("");
@@ -336,7 +358,7 @@ export default function WeatherChat() {
                                         color: darkMode ? '#ffffff' : '#000000'
                                     }}
                                 >
-                                    <TextDotsLoader text="Checking weather" size="sm" />
+                                    <TextDotsLoader text={messages[messages.length - 1]?.loadingMsg || "Thinking"} size="sm" />
                                 </div>
                             </div>
                         )}
