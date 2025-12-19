@@ -36,7 +36,7 @@ src/\
 ├── vite.config.js\
 └── package.json\
 
-Design decision:
+**Design decision:**
 This is a single-screen assignment with one API interaction. All chat-related logic (state, API calls, UI rendering) is intentionally kept inside WeatherChat.jsx to avoid unnecessary abstraction and overengineering.
 
 
@@ -45,11 +45,12 @@ This is a single-screen assignment with one API interaction. All chat-related lo
 POST https://api-dev.provue.ai/api/webapp/agent/test-agent
 
 REQUEST BODY
-
-{\
-  "prompt": "What's the weather in Mumbai?",\
-  "stream": false\
+```
+{
+  "prompt": "What's the weather in Mumbai?",
+  "stream": false
 }
+```
 
 - No authentication or API key is required
 - The API returns a non-streaming JSON response
@@ -77,32 +78,29 @@ layer, which is outside the scope of this assignment.
 
 ## RUNNING THE PROJECT LOCALLY
 
-PREREQUISITES
-
+**Prerequisites:**
 - Node.js (v18 or higher recommended)
 - npm or yarn
 
-STEPS
-
+**Steps:**
 ```
-git clone [<repository-url>](https://github.com/ShivamAtHub/weatherapp_pazago.git)
+git clone https://github.com/ShivamAtHub/weatherapp_pazago.git
 cd weatherapp_pazago
 npm install
 npm run dev
 ```
 
 The application will be available at:
-
+```
 http://localhost:5173
-
+```
 
 ## DEPLOYMENT
 
 This project is deployed at:
 
 
-Note:
-The API may not respond in production due to CORS restrictions. This is a backend limitation and has been documented above.
+_**Note:** The API may not respond in production due to CORS restrictions. This is a backend limitation and has been documented above._
 
 
 ## ASSUMPTIONS AND CONSTRAINTS
