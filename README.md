@@ -32,7 +32,7 @@ This project was developed as part of a frontend engineering assignment and focu
 ## PROJECT STRUCTURE
 
 src/
-├── components/
+├── components/\
 │ └── WeatherChat.jsx       - Main chat page (all UI + logic)
 ├── App.jsx                 - Routing
 ├── main.jsx                - App entry point
