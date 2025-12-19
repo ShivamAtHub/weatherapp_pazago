@@ -7,7 +7,7 @@ This project was developed as part of a frontend engineering assignment and focu
 
 ======================================================================
 
-FEATURES
+## FEATURES
 
 - Single-page chat interface
 - Conversational UI with user and agent messages
@@ -19,7 +19,7 @@ FEATURES
 
 ======================================================================
 
-TECH STACK
+## TECH STACK
 
 - React (Hooks)
 - Vite
@@ -29,7 +29,7 @@ TECH STACK
 
 ======================================================================
 
-PROJECT STRUCTURE
+## PROJECT STRUCTURE
 
 src/
 ├── components/
@@ -44,7 +44,7 @@ This is a single-screen assignment with one API interaction. All chat-related lo
 
 ======================================================================
 
-API INTEGRATION
+## API INTEGRATION
 
 POST https://api-dev.provue.ai/api/webapp/agent/test-agent
 
@@ -61,7 +61,7 @@ REQUEST BODY
 
 ======================================================================
 
-CORS NOTE (IMPORTANT)
+## CORS NOTE (IMPORTANT)
 
 While the updated API works correctly in Postman, browser-based requests are blocked due to missing CORS headers on the backend.
 
@@ -71,7 +71,7 @@ This results in errors such as:
 
 ---------------------------------------------------------------------
 
-PRODUCTION BEHAVIOR
+### PRODUCTION BEHAVIOR
 
 In production deployments (Vercel, Netlify, etc.), browser CORS restrictions still apply.
 The application handles this gracefully by showing an error state instead of crashing.
@@ -81,7 +81,7 @@ layer, which is outside the scope of this assignment.
 
 ======================================================================
 
-RUNNING THE PROJECT LOCALLY
+## RUNNING THE PROJECT LOCALLY
 
 PREREQUISITES
 
@@ -101,7 +101,7 @@ http://localhost:5173
 
 ======================================================================
 
-DEPLOYMENT
+## DEPLOYMENT
 
 This project is deployed at:
 
@@ -111,15 +111,7 @@ The API may not respond in production due to CORS restrictions. This is a backen
 
 ======================================================================
 
-UI BEHAVIOR NOTES
-
-- The large heading and subtext are shown only when no messages exist (empty state)
-- Once a message is sent, the interface transitions fully into chat mode
-- The design mirrors modern conversational UIs for familiarity and usability
-
-======================================================================
-
-ASSUMPTIONS AND CONSTRAINTS
+## ASSUMPTIONS AND CONSTRAINTS
 
 - No authentication flow was required or documented
 - The API is assumed to be a development or test endpoint
@@ -127,7 +119,7 @@ ASSUMPTIONS AND CONSTRAINTS
 
 ======================================================================
 
-SUMMARY
+## SUMMARY
 
 This project demonstrates:
 - Clean frontend architecture
@@ -139,7 +131,7 @@ The implementation prioritizes clarity, correctness, and professionalism over un
 
 ======================================================================
 
-AUTHOR
+## AUTHOR
 
 https://github.com/ShivamAtHub
 https://www.linkedin.com/in/shivamdarekar2206/
