@@ -65,16 +65,6 @@ This results in errors such as:
 - Blocked by CORS policy
 - 500 Internal Server Error when proxied locally
 
----------------------------------------------------------------------
-
-### PRODUCTION BEHAVIOR
-
-In production deployments (Vercel, Netlify, etc.), browser CORS restrictions still apply.
-The application handles this gracefully by showing an error state instead of crashing.
-
-Proper resolution would require backend-side CORS configuration or a backend-for-frontend
-layer, which is outside the scope of this assignment.
-
 
 ## RUNNING THE PROJECT LOCALLY
 
@@ -100,7 +90,7 @@ http://localhost:5173
 This project is deployed at:
 
 
-_**Note:** The API may not respond in production due to CORS restrictions. This is a backend limitation and has been documented above._
+> _**Note:** The API may not respond in production due to CORS restrictions. This is a backend limitation and has been documented above._
 
 
 ## ASSUMPTIONS AND CONSTRAINTS
@@ -123,5 +113,5 @@ The implementation prioritizes clarity, correctness, and professionalism over un
 
 ## AUTHOR
 
-https://github.com/ShivamAtHub  
-https://www.linkedin.com/in/shivamdarekar2206/
+[GitHub](https://github.com/ShivamAtHub)  
+[LinkedIn](https://www.linkedin.com/in/shivamdarekar2206/)
