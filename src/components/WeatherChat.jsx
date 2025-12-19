@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { ArrowUp, Cloud, Moon, Sun, CloudRain, Wind, Paperclip, Plus } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 const API_URL = "https://api-dev.provue.ai/api/webapp/agent/test-agent";
 
@@ -144,16 +145,13 @@ export default function WeatherChat() {
             }
 
             const data = await res.json();
+            console.log("API RESPONSE:", data);
 
             setMessages((prev) => [
                 ...prev,
                 {
                     role: "agent",
-                    content:
-                        data.response ||
-                        data.output ||
-                        data.answer ||
-                        "No response received.",
+                    content: data?.data?.response || "No response received.",
                 },
             ]);
         } catch (err) {
@@ -253,7 +251,37 @@ export default function WeatherChat() {
                                         border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`
                                     } : {}}
                                 >
-                                    <pre className="whitespace-pre-wrap font-sans">{m.content}</pre>
+                                    {m.role === "user" ? (
+                                        <pre className="whitespace-pre-wrap font-sans">{m.content}</pre>
+                                    ) : (
+                                        <div className="prose prose-sm max-w-none">
+                                            <ReactMarkdown
+                                                components={{
+                                                    h1: ({node, className, ...props}) => <h1 className="text-lg font-bold mt-4 mb-2 first:mt-0" {...props} />,
+                                                    h2: ({node, className, ...props}) => <h2 className="text-base font-bold mt-3 mb-2 first:mt-0" {...props} />,
+                                                    h3: ({node, className, ...props}) => <h3 className="text-sm font-bold mt-2 mb-1 first:mt-0" {...props} />,
+                                                    p: ({node, className, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                                    ul: ({node, className, ...props}) => <ul className="list-disc list-inside mb-2 space-y-1" {...props} />,
+                                                    ol: ({node, className, ...props}) => <ol className="list-decimal list-inside mb-2 space-y-1" {...props} />,
+                                                    li: ({node, className, ...props}) => <li className="ml-2" {...props} />,
+                                                    strong: ({node, className, ...props}) => <strong className="font-semibold" {...props} />,
+                                                    em: ({node, className, ...props}) => <em className="italic" {...props} />,
+                                                    code: ({node, inline, className, ...props}) => 
+                                                        inline ? (
+                                                            <code className="px-1 py-0.5 rounded text-xs" style={{
+                                                                backgroundColor: darkMode ? '#262626' : '#e5e5e5'
+                                                            }} {...props} />
+                                                        ) : (
+                                                            <code className="block p-2 rounded text-xs mb-2" style={{
+                                                                backgroundColor: darkMode ? '#262626' : '#e5e5e5'
+                                                            }} {...props} />
+                                                        ),
+                                                }}
+                                            >
+                                                {m.content}
+                                            </ReactMarkdown>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}

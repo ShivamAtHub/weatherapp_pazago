@@ -15,6 +15,7 @@ This project was developed as part of a frontend engineering assignment and focu
 - Dark and light mode support
 - Responsive layout for mobile and desktop
 - Clean separation between routing and page logic
+- Agent responses are rendered using Markdown to preserve headings, lists, and readability for long-form weather outputs.
 
 
 ## TECH STACK
@@ -36,6 +37,9 @@ src/\
 ├── vite.config.js\
 └── package.json\
 
+App.jsx is intentionally kept minimal and handles routing only, while WeatherChat.jsx contains all chat-related logic and UI.
+
+
 **Design decision:**
 This is a single-screen assignment with one API interaction. All chat-related logic (state, API calls, UI rendering) is intentionally kept inside WeatherChat.jsx to avoid unnecessary abstraction and overengineering.
 
@@ -55,15 +59,6 @@ REQUEST BODY
 - No authentication or API key is required
 - The API returns a non-streaming JSON response
 - This endpoint works correctly when tested via Postman
-
-
-## CORS NOTE (IMPORTANT)
-
-While the updated API works correctly in Postman, browser-based requests are blocked due to missing CORS headers on the backend.
-
-This results in errors such as:
-- Blocked by CORS policy
-- 500 Internal Server Error when proxied locally
 
 
 ## RUNNING THE PROJECT LOCALLY
@@ -87,17 +82,10 @@ http://localhost:5173
 
 ## DEPLOYMENT
 
-This project is deployed at:
-
-
-> _**Note:** The API may not respond in production due to CORS restrictions. This is a backend limitation and has been documented above._
-
-
-## ASSUMPTIONS AND CONSTRAINTS
-
-- No authentication flow was required or documented
-- The API is assumed to be a development or test endpoint
-- Error handling and user feedback are implemented for all failure cases
+This project is deployed at: 
+```
+https://weatheragentchat-eta.vercel.app/
+```
 
 
 ## SUMMARY
