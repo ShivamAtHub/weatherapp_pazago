@@ -31,13 +31,13 @@ This project was developed as part of a frontend engineering assignment and focu
 
 ## PROJECT STRUCTURE
 
-src/
+src/\
 ├── components/\
-│ └── WeatherChat.jsx       - Main chat page (all UI + logic)
-├── App.jsx                 - Routing
-├── main.jsx                - App entry point
-├── vite.config.js
-└── package.json
+│ └── WeatherChat.jsx       - Main chat page (all UI + logic)\
+├── App.jsx                 - Routing\
+├── main.jsx                - App entry point\
+├── vite.config.js\
+└── package.json\
 
 Design decision:
 This is a single-screen assignment with one API interaction. All chat-related logic (state, API calls, UI rendering) is intentionally kept inside WeatherChat.jsx to avoid unnecessary abstraction and overengineering.
@@ -50,10 +50,10 @@ POST https://api-dev.provue.ai/api/webapp/agent/test-agent
 
 REQUEST BODY
 
-{
-  "prompt": "What's the weather in Mumbai?",
-  "stream": false
-}
+{\
+  "prompt": "What's the weather in Mumbai?",\
+  "stream": false\
+}\
 
 - No authentication or API key is required
 - The API returns a non-streaming JSON response
@@ -90,10 +90,12 @@ PREREQUISITES
 
 STEPS
 
-git clone [<repository-url>](https://github.com/ShivamAtHub/weatherapp_pazago.git)
-cd weatherapp_pazago
-npm install
-npm run dev
+```
+git clone [<repository-url>](https://github.com/ShivamAtHub/weatherapp_pazago.git)\
+cd weatherapp_pazago\
+npm install\
+npm run dev\
+```
 
 The application will be available at:
 
@@ -133,5 +135,5 @@ The implementation prioritizes clarity, correctness, and professionalism over un
 
 ## AUTHOR
 
-https://github.com/ShivamAtHub
+https://github.com/ShivamAtHub  
 https://www.linkedin.com/in/shivamdarekar2206/
