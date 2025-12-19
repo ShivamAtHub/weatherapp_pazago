@@ -5,7 +5,6 @@ The application allows users to ask natural language questions about weather con
 
 This project was developed as part of a frontend engineering assignment and focuses on UI clarity, clean state handling, and real-world API integration considerations.
 
-======================================================================
 
 ## FEATURES
 
@@ -17,7 +16,6 @@ This project was developed as part of a frontend engineering assignment and focu
 - Responsive layout for mobile and desktop
 - Clean separation between routing and page logic
 
-======================================================================
 
 ## TECH STACK
 
@@ -27,7 +25,6 @@ This project was developed as part of a frontend engineering assignment and focu
 - React Router
 - Fetch API
 
-======================================================================
 
 ## PROJECT STRUCTURE
 
@@ -42,7 +39,6 @@ src/\
 Design decision:
 This is a single-screen assignment with one API interaction. All chat-related logic (state, API calls, UI rendering) is intentionally kept inside WeatherChat.jsx to avoid unnecessary abstraction and overengineering.
 
-======================================================================
 
 ## API INTEGRATION
 
@@ -53,13 +49,12 @@ REQUEST BODY
 {\
   "prompt": "What's the weather in Mumbai?",\
   "stream": false\
-}\
+}
 
 - No authentication or API key is required
 - The API returns a non-streaming JSON response
 - This endpoint works correctly when tested via Postman
 
-======================================================================
 
 ## CORS NOTE (IMPORTANT)
 
@@ -79,7 +74,6 @@ The application handles this gracefully by showing an error state instead of cra
 Proper resolution would require backend-side CORS configuration or a backend-for-frontend
 layer, which is outside the scope of this assignment.
 
-======================================================================
 
 ## RUNNING THE PROJECT LOCALLY
 
@@ -91,17 +85,16 @@ PREREQUISITES
 STEPS
 
 ```
-git clone [<repository-url>](https://github.com/ShivamAtHub/weatherapp_pazago.git)\
-cd weatherapp_pazago\
-npm install\
-npm run dev\
+git clone [<repository-url>](https://github.com/ShivamAtHub/weatherapp_pazago.git)
+cd weatherapp_pazago
+npm install
+npm run dev
 ```
 
 The application will be available at:
 
 http://localhost:5173
 
-======================================================================
 
 ## DEPLOYMENT
 
@@ -111,7 +104,6 @@ This project is deployed at:
 Note:
 The API may not respond in production due to CORS restrictions. This is a backend limitation and has been documented above.
 
-======================================================================
 
 ## ASSUMPTIONS AND CONSTRAINTS
 
@@ -119,7 +111,6 @@ The API may not respond in production due to CORS restrictions. This is a backen
 - The API is assumed to be a development or test endpoint
 - Error handling and user feedback are implemented for all failure cases
 
-======================================================================
 
 ## SUMMARY
 
@@ -131,7 +122,6 @@ This project demonstrates:
 
 The implementation prioritizes clarity, correctness, and professionalism over unnecessary complexity.
 
-======================================================================
 
 ## AUTHOR
 
