@@ -2,8 +2,38 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { ArrowUp, Cloud, Moon, Sun, CloudRain, Wind, Paperclip, Plus } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
+// Lightweight animated loader shown while waiting for agent response
+function TextDotsLoader({ text = "Thinking", size = "md", className = "" }) {
+  const textSizes = {
+    sm: "text-xs",
+    md: "text-sm",
+    lg: "text-base",
+  };
+
+  return (
+    <div className={`inline-flex items-center ${className}`}>
+      <span className={`font-medium ${textSizes[size]}`} style={{ color: 'inherit' }}>
+        {text}
+      </span>
+      <span className="inline-flex">
+        <span className="animate-[loading-dots_1.4s_infinite_0.2s]" style={{ color: 'inherit' }}>
+          .
+        </span>
+        <span className="animate-[loading-dots_1.4s_infinite_0.4s]" style={{ color: 'inherit' }}>
+          .
+        </span>
+        <span className="animate-[loading-dots_1.4s_infinite_0.6s]" style={{ color: 'inherit' }}>
+          .
+        </span>
+      </span>
+    </div>
+  );
+}
+
+// Weather agent API endpoint (non-streaming response)
 const API_URL = "https://api-dev.provue.ai/api/webapp/agent/test-agent";
 
+// Hero heading with animated shimmer effect for empty chat state
 function ShimmerText({ text, darkMode }) {
     const [position, setPosition] = useState(0);
     
@@ -32,6 +62,7 @@ function ShimmerText({ text, darkMode }) {
     );
 }
 
+// Custom hook to auto-resize the textarea based on content and window resize
 function useAutoResizeTextarea({ minHeight, maxHeight }) {
     const textareaRef = useRef(null);
 
@@ -108,12 +139,14 @@ export default function WeatherChat() {
         maxHeight: 200,
     });
 
+    // Auto-scroll to the latest message when chat updates
     useEffect(() => {
         if (messages.length > 0) {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages, loading]);
 
+    // Sends user input to the weather agent API and appends agent response to chat
     const sendMessage = async () => {
         if (!input.trim() || loading) return;
 
@@ -197,7 +230,15 @@ export default function WeatherChat() {
 
     return (
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: darkMode ? '#121212' : '#ffffff' }}>
-            {/* Theme toggle - top right */}
+            <style>{`
+                @keyframes loading-dots {
+                    0%, 20% { opacity: 0; }
+                    50% { opacity: 1; }
+                    100% { opacity: 0; }
+                }
+            `}</style>
+            
+            {/* Theme toggle button - top right */}
             <div className="absolute top-4 right-4 flex gap-2">
                 <button
                     onClick={() => {
@@ -291,12 +332,11 @@ export default function WeatherChat() {
                                     className="px-4 py-3 rounded-2xl"
                                     style={{
                                         backgroundColor: darkMode ? '#171717' : '#f5f5f5',
-                                        border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`
+                                        border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`,
+                                        color: darkMode ? '#ffffff' : '#000000'
                                     }}
                                 >
-                                    <span className="text-sm" style={{ color: darkMode ? '#a3a3a3' : '#737373' }}>
-                                        Checking weather...
-                                    </span>
+                                    <TextDotsLoader text="Checking weather" size="sm" />
                                 </div>
                             </div>
                         )}
@@ -349,7 +389,7 @@ export default function WeatherChat() {
                                 onKeyDown={handleKeyDown}
                                 placeholder="Ask about the weather..."
                                 disabled={loading}
-                                className="w-full px-4 py-3 resize-none bg-transparent border-none text-sm focus:outline-none min-h-[60px]"
+                                className="w-full px-4 py-3 resize-none bg-transparent border-none text-sm focus:outline-none min-h-[60px] placeholder:transition-colors"
                                 style={{
                                     overflow: "hidden",
                                     color: darkMode ? '#ffffff' : '#000000'
