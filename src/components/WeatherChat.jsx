@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ArrowUp, Cloud, Moon, Sun, CloudRain, Wind, Paperclip, Plus } from "lucide-react";
+import { ArrowUp, Cloud, Moon, Sun, CloudRain, Wind, Paperclip, Plus, Download, Volume2, VolumeX, Search, X, Bot } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 // Lightweight animated loader shown while waiting for agent response
@@ -125,15 +125,63 @@ function ActionButton({ icon, label, onClick, darkMode }) {
     );
 }
 
+// Sound utility functions
+function createSoundEffect(frequency, duration, type = 'sine') {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration);
+    } catch (e) {
+        console.error('Audio not supported:', e);
+    }
+}
+
+function playSendSound() {
+    createSoundEffect(800, 0.1);
+}
+
+function playReceiveSound() {
+    createSoundEffect(600, 0.15);
+}
+
+// Format timestamp
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes < 10 ? `0${minutes}` : minutes;
+    return `${displayHours}:${displayMinutes} ${ampm}`;
+}
+
 export default function WeatherChat() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [darkMode, setDarkMode] = useState(true);
+    const [soundEnabled, setSoundEnabled] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [showSearch, setShowSearch] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+    const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
 
-    const bottomRef = useRef(null);
     const messagesEndRef = useRef(null);
+    const searchInputRef = useRef(null);
+    const messageRefs = useRef({});
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
         minHeight: 60,
         maxHeight: 200,
@@ -141,10 +189,46 @@ export default function WeatherChat() {
 
     // Auto-scroll to the latest message when chat updates
     useEffect(() => {
-        if (messages.length > 0) {
+        if (messages.length > 0 && !showSearch) {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
-    }, [messages, loading]);
+    }, [messages, loading, showSearch]);
+
+    // Handle search
+    useEffect(() => {
+        if (searchQuery.trim()) {
+            const results = [];
+            messages.forEach((msg, idx) => {
+                const content = msg.content.toLowerCase();
+                const query = searchQuery.toLowerCase();
+                if (content.includes(query)) {
+                    results.push(idx);
+                }
+            });
+            setSearchResults(results);
+            setCurrentSearchIndex(0);
+        } else {
+            setSearchResults([]);
+            setCurrentSearchIndex(0);
+        }
+    }, [searchQuery, messages]);
+
+    // Scroll to current search result
+    useEffect(() => {
+        if (searchResults.length > 0 && messageRefs.current[searchResults[currentSearchIndex]]) {
+            messageRefs.current[searchResults[currentSearchIndex]].scrollIntoView({ 
+                behavior: "smooth", 
+                block: "center" 
+            });
+        }
+    }, [currentSearchIndex, searchResults]);
+
+    // Focus search input when opened
+    useEffect(() => {
+        if (showSearch && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [showSearch]);
 
     // Determines appropriate loading message based on user input
     const getLoadingMessage = (text) => {
@@ -167,19 +251,61 @@ export default function WeatherChat() {
         return "Thinking";
     };
 
+    // Export chat as TXT
+    const exportChat = () => {
+        if (messages.length === 0) {
+            setError("No messages to export");
+            setTimeout(() => setError(null), 3000);
+            return;
+        }
+
+        let chatText = "Weather Chat Export\n";
+        chatText += "=".repeat(50) + "\n\n";
+        
+        messages.forEach((msg) => {
+            const role = msg.role === "user" ? "You" : "Weather Agent";
+            const time = formatTime(msg.timestamp);
+            chatText += `[${time}] ${role}:\n${msg.content}\n\n`;
+        });
+        
+        chatText += "=".repeat(50) + "\n";
+        chatText += `Exported on ${new Date().toLocaleString()}\n`;
+
+        const blob = new Blob([chatText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `weather-chat-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        if (soundEnabled) {
+            createSoundEffect(1000, 0.1);
+        }
+    };
+
     // Sends user input to the weather agent API and appends agent response to chat
     const sendMessage = async () => {
-        if (!input.trim() || loading) return;
+        const trimmedInput = input.trim();
+        
+        if (!trimmedInput || loading) return;
 
         const userText = input;
         const loadingMsg = getLoadingMessage(userText);
 
+        if (soundEnabled) {
+            playSendSound();
+        }
+
         setMessages((prev) => [
             ...prev,
-            { role: "user", content: userText, loadingMsg },
+            { role: "user", content: userText, loadingMsg, timestamp: Date.now() },
         ]);
 
         setInput("");
+        adjustHeight(true);
         setLoading(true);
         setError(null);
 
@@ -196,23 +322,35 @@ export default function WeatherChat() {
             });
 
             if (!res.ok) {
-                throw new Error("API request failed");
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.message || `Request failed with status ${res.status}`);
             }
 
             const data = await res.json();
-            console.log("API RESPONSE:", data);
+
+            if (soundEnabled) {
+                playReceiveSound();
+            }
 
             setMessages((prev) => [
                 ...prev,
                 {
                     role: "agent",
                     content: data?.data?.response || "No response received.",
+                    timestamp: Date.now(),
                 },
             ]);
         } catch (err) {
-            setError("Failed to fetch weather response.");
+            setError(err.message || "Failed to fetch weather response. Please try again.");
+            if (soundEnabled) {
+                createSoundEffect(300, 0.2);
+            }
         } finally {
             setLoading(false);
+            // Auto-focus textarea after response is received
+            setTimeout(() => {
+                textareaRef.current?.focus();
+            }, 100);
         }
     };
 
@@ -250,6 +388,24 @@ export default function WeatherChat() {
         setTimeout(() => adjustHeight(), 0);
     };
 
+    const highlightText = (text, query) => {
+        if (!query.trim()) return text;
+        
+        const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+        return parts.map((part, i) => 
+            part.toLowerCase() === query.toLowerCase() ? (
+                <mark key={i} style={{
+                    backgroundColor: darkMode ? '#4a4a4a' : '#fef08a',
+                    color: 'inherit',
+                    padding: '0 2px',
+                    borderRadius: '2px'
+                }}>
+                    {part}
+                </mark>
+            ) : part
+        );
+    };
+
     return (
         <div className="min-h-screen flex flex-col" style={{ backgroundColor: darkMode ? '#121212' : '#ffffff' }}>
             <style>{`
@@ -260,8 +416,45 @@ export default function WeatherChat() {
                 }
             `}</style>
             
-            {/* Theme toggle button - top right */}
-            <div className="absolute top-4 right-4 flex gap-2">
+            {/* Theme toggle button - top right - STICKY */}
+            <div className="fixed top-4 right-4 flex gap-2 z-20">
+                {messages.length > 0 && (
+                    <>
+                        <button
+                            onClick={() => setShowSearch(!showSearch)}
+                            className="p-2 rounded-lg transition-colors"
+                            style={{
+                                backgroundColor: showSearch ? (darkMode ? '#262626' : '#e5e5e5') : (darkMode ? '#171717' : '#f5f5f5'),
+                                color: darkMode ? '#ffffff' : '#000000'
+                            }}
+                            aria-label="Search messages"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
+                        <button
+                            onClick={() => setSoundEnabled(!soundEnabled)}
+                            className="p-2 rounded-lg transition-colors"
+                            style={{
+                                backgroundColor: darkMode ? '#171717' : '#f5f5f5',
+                                color: darkMode ? '#ffffff' : '#000000'
+                            }}
+                            aria-label="Toggle sound"
+                        >
+                            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                        </button>
+                        <button
+                            onClick={exportChat}
+                            className="p-2 rounded-lg transition-colors"
+                            style={{
+                                backgroundColor: darkMode ? '#171717' : '#f5f5f5',
+                                color: darkMode ? '#ffffff' : '#000000'
+                            }}
+                            aria-label="Export chat"
+                        >
+                            <Download className="w-5 h-5" />
+                        </button>
+                    </>
+                )}
                 <button
                     onClick={() => {
                         setDarkMode(d => {
@@ -282,7 +475,11 @@ export default function WeatherChat() {
                 {messages.length > 0 && (
                     <button
                         type="button"
-                        onClick={() => setMessages([])}
+                        onClick={() => {
+                            setMessages([]);
+                            setSearchQuery("");
+                            setShowSearch(false);
+                        }}
                         className="p-2 rounded-lg transition-colors text-xs px-3"
                         style={{
                             backgroundColor: darkMode ? '#171717' : '#f5f5f5',
@@ -294,71 +491,179 @@ export default function WeatherChat() {
                 )}
             </div>
 
-            {/* Messages area - scrollable */}
+            {/* Search bar - STICKY */}
+            {showSearch && messages.length > 0 && (
+                <div className="fixed top-16 right-4 left-4 z-10">
+                    <div className="max-w-md ml-auto" style={{
+                        backgroundColor: darkMode ? '#171717' : '#f5f5f5',
+                        border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`,
+                        borderRadius: '12px',
+                        padding: '12px'
+                    }}>
+                        <div className="flex items-center gap-2">
+                            <Search className="w-4 h-4" style={{ color: darkMode ? '#a3a3a3' : '#737373' }} />
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search messages..."
+                                className="flex-1 bg-transparent border-none outline-none text-sm"
+                                style={{ color: darkMode ? '#ffffff' : '#000000' }}
+                            />
+                            {searchQuery && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs" style={{ color: darkMode ? '#a3a3a3' : '#737373' }}>
+                                        {searchResults.length > 0 ? `${currentSearchIndex + 1}/${searchResults.length}` : 'No results'}
+                                    </span>
+                                    {searchResults.length > 0 && (
+                                        <>
+                                            <button
+                                                onClick={() => setCurrentSearchIndex((prev) => 
+                                                    prev > 0 ? prev - 1 : searchResults.length - 1
+                                                )}
+                                                className="p-1 rounded hover:bg-opacity-10"
+                                                style={{ color: darkMode ? '#ffffff' : '#000000' }}
+                                            >
+                                                ↑
+                                            </button>
+                                            <button
+                                                onClick={() => setCurrentSearchIndex((prev) => 
+                                                    prev < searchResults.length - 1 ? prev + 1 : 0
+                                                )}
+                                                className="p-1 rounded hover:bg-opacity-10"
+                                                style={{ color: darkMode ? '#ffffff' : '#000000' }}
+                                            >
+                                                ↓
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                            <button
+                                onClick={() => {
+                                    setShowSearch(false);
+                                    setSearchQuery("");
+                                }}
+                                className="p-1"
+                                style={{ color: darkMode ? '#a3a3a3' : '#737373' }}
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Messages area - scrollable with padding for sticky elements */}
             {messages.length > 0 && (
-                <div className="flex-1 overflow-y-auto px-4 pt-20 pb-4">
+                <div className="flex-1 overflow-y-auto px-4 pt-20 pb-32">
                     <div className="w-full max-w-4xl mx-auto space-y-4">
                         {messages.map((m, i) => (
                             <div
                                 key={i}
+                                ref={el => messageRefs.current[i] = el}
                                 className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                             >
-                                <div
-                                    className={`max-w-[85%] sm:max-w-[75%] px-4 py-3 rounded-2xl text-sm ${m.role === "user"
-                                        ? "bg-neutral-800 text-white"
-                                        : ""
-                                        }`}
-                                    style={m.role === "agent" ? {
-                                        backgroundColor: darkMode ? '#171717' : '#f5f5f5',
-                                        color: darkMode ? '#ffffff' : '#000000',
-                                        border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`
-                                    } : {}}
-                                >
-                                    {m.role === "user" ? (
-                                        <pre className="whitespace-pre-wrap font-sans">{m.content}</pre>
-                                    ) : (
-                                        <div className="prose prose-sm max-w-none">
-                                            <ReactMarkdown
-                                                components={{
-                                                    h1: ({node, className, ...props}) => <h1 className="text-lg font-bold mt-4 mb-2 first:mt-0" {...props} />,
-                                                    h2: ({node, className, ...props}) => <h2 className="text-base font-bold mt-3 mb-2 first:mt-0" {...props} />,
-                                                    h3: ({node, className, ...props}) => <h3 className="text-sm font-bold mt-2 mb-1 first:mt-0" {...props} />,
-                                                    p: ({node, className, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                                                    ul: ({node, className, ...props}) => <ul className="list-disc list-inside mb-2 space-y-1" {...props} />,
-                                                    ol: ({node, className, ...props}) => <ol className="list-decimal list-inside mb-2 space-y-1" {...props} />,
-                                                    li: ({node, className, ...props}) => <li className="ml-2" {...props} />,
-                                                    strong: ({node, className, ...props}) => <strong className="font-semibold" {...props} />,
-                                                    em: ({node, className, ...props}) => <em className="italic" {...props} />,
-                                                    code: ({node, inline, className, ...props}) => 
-                                                        inline ? (
-                                                            <code className="px-1 py-0.5 rounded text-xs" style={{
-                                                                backgroundColor: darkMode ? '#262626' : '#e5e5e5'
-                                                            }} {...props} />
-                                                        ) : (
-                                                            <code className="block p-2 rounded text-xs mb-2" style={{
-                                                                backgroundColor: darkMode ? '#262626' : '#e5e5e5'
-                                                            }} {...props} />
-                                                        ),
+                                <div className="flex flex-col items-start max-w-[85%] sm:max-w-[75%]">
+                                    <div className="flex items-start gap-2 w-full">
+                                        {m.role === "agent" && (
+                                            <div 
+                                                className="flex-shrink-0 p-1.5 rounded-full mt-1"
+                                                style={{
+                                                    backgroundColor: darkMode ? '#262626' : '#e5e5e5'
                                                 }}
                                             >
-                                                {m.content}
-                                            </ReactMarkdown>
+                                                <Bot className="w-4 h-4" style={{ color: darkMode ? '#a3a3a3' : '#737373' }} />
+                                            </div>
+                                        )}
+                                        <div
+                                            className={`flex-1 px-4 py-3 rounded-2xl text-sm`}
+                                            style={m.role === "user" ? {
+                                                backgroundColor: darkMode ? '#262626' : '#d4d4d4',
+                                                color: darkMode ? '#ffffff' : '#000000'
+                                            } : {
+                                                backgroundColor: darkMode ? '#171717' : '#f5f5f5',
+                                                color: darkMode ? '#ffffff' : '#000000',
+                                                border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`
+                                            }}
+                                        >
+                                            {m.role === "user" ? (
+                                                <pre className="whitespace-pre-wrap font-sans">
+                                                    {searchQuery ? highlightText(m.content, searchQuery) : m.content}
+                                                </pre>
+                                            ) : (
+                                                <div className="prose prose-sm max-w-none">
+                                                    <ReactMarkdown
+                                                        components={{
+                                                            h1: ({node, className, ...props}) => <h1 className="text-lg font-bold mt-4 mb-2 first:mt-0" {...props} />,
+                                                            h2: ({node, className, ...props}) => <h2 className="text-base font-bold mt-3 mb-2 first:mt-0" {...props} />,
+                                                            h3: ({node, className, ...props}) => <h3 className="text-sm font-bold mt-2 mb-1 first:mt-0" {...props} />,
+                                                            p: ({node, className, children, ...props}) => (
+                                                                <p className="mb-2 last:mb-0" {...props}>
+                                                                    {searchQuery && typeof children === 'string' ? highlightText(children, searchQuery) : children}
+                                                                </p>
+                                                            ),
+                                                            ul: ({node, className, ...props}) => <ul className="list-disc list-inside mb-2 space-y-1" {...props} />,
+                                                            ol: ({node, className, ...props}) => <ol className="list-decimal list-inside mb-2 space-y-1" {...props} />,
+                                                            li: ({node, className, children, ...props}) => (
+                                                                <li className="ml-2" {...props}>
+                                                                    {searchQuery && typeof children === 'string' ? highlightText(children, searchQuery) : children}
+                                                                </li>
+                                                            ),
+                                                            strong: ({node, className, ...props}) => <strong className="font-semibold" {...props} />,
+                                                            em: ({node, className, ...props}) => <em className="italic" {...props} />,
+                                                            code: ({node, inline, className, ...props}) => 
+                                                                inline ? (
+                                                                    <code className="px-1 py-0.5 rounded text-xs" style={{
+                                                                        backgroundColor: darkMode ? '#262626' : '#e5e5e5'
+                                                                    }} {...props} />
+                                                                ) : (
+                                                                    <code className="block p-2 rounded text-xs mb-2" style={{
+                                                                        backgroundColor: darkMode ? '#262626' : '#e5e5e5'
+                                                                    }} {...props} />
+                                                                ),
+                                                        }}
+                                                    >
+                                                        {m.content}
+                                                    </ReactMarkdown>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
+                                    <span 
+                                        className="text-xs mt-1 ml-1"
+                                        style={{ 
+                                            color: darkMode ? '#525252' : '#a3a3a3',
+                                            marginLeft: m.role === "agent" ? '36px' : '4px'
+                                        }}
+                                    >
+                                        {formatTime(m.timestamp)}
+                                    </span>
                                 </div>
                             </div>
                         ))}
                         {loading && (
                             <div className="flex justify-start">
-                                <div
-                                    className="px-4 py-3 rounded-2xl"
-                                    style={{
-                                        backgroundColor: darkMode ? '#171717' : '#f5f5f5',
-                                        border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`,
-                                        color: darkMode ? '#ffffff' : '#000000'
-                                    }}
-                                >
-                                    <TextDotsLoader text={messages[messages.length - 1]?.loadingMsg || "Thinking"} size="sm" />
+                                <div className="flex items-start gap-2">
+                                    <div 
+                                        className="flex-shrink-0 p-1.5 rounded-full mt-1"
+                                        style={{
+                                            backgroundColor: darkMode ? '#262626' : '#e5e5e5'
+                                        }}
+                                    >
+                                        <Bot className="w-4 h-4" style={{ color: darkMode ? '#a3a3a3' : '#737373' }} />
+                                    </div>
+                                    <div
+                                        className="px-4 py-3 rounded-2xl"
+                                        style={{
+                                            backgroundColor: darkMode ? '#171717' : '#f5f5f5',
+                                            border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`,
+                                            color: darkMode ? '#ffffff' : '#000000'
+                                        }}
+                                    >
+                                        <TextDotsLoader text={messages[messages.length - 1]?.loadingMsg || "Thinking"} size="sm" />
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -377,8 +682,11 @@ export default function WeatherChat() {
                 </div>
             )}
 
-            {/* Input area - fixed at bottom */}
-            <div className="w-full px-4 pb-6">
+            {/* Input area - STICKY at bottom */}
+            <div className="fixed bottom-0 left-0 right-0 w-full px-4 pb-6 z-20" style={{
+                backgroundColor: darkMode ? '#121212' : '#ffffff',
+                borderTop: `1px solid ${darkMode ? '#1c1c1c' : '#f5f5f5'}`
+            }}>
                 <div className="w-full max-w-4xl mx-auto">
                     {error && (
                         <div
