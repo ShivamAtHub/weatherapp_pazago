@@ -507,7 +507,7 @@ export default function WeatherChat() {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search messages..."
+                                placeholder="That message is here somewhere..."
                                 className="flex-1 bg-transparent border-none outline-none text-sm"
                                 style={{ color: darkMode ? '#ffffff' : '#000000' }}
                             />
@@ -557,8 +557,8 @@ export default function WeatherChat() {
 
             {/* Messages area - scrollable with padding for sticky elements */}
             {messages.length > 0 && (
-                <div className="flex-1 overflow-y-auto px-4 pt-20 pb-32">
-                    <div className="w-full max-w-4xl mx-auto space-y-4">
+                <div className="flex-1 overflow-y-auto px-4 pt-20 pb-40">
+                    <div className="w-full max-w-4xl mx-auto space-y-3">
                         {messages.map((m, i) => (
                             <div
                                 key={i}
@@ -593,14 +593,14 @@ export default function WeatherChat() {
                                                     {searchQuery ? highlightText(m.content, searchQuery) : m.content}
                                                 </pre>
                                             ) : (
-                                                <div className="prose prose-sm max-w-none">
+                                                <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0">
                                                     <ReactMarkdown
                                                         components={{
                                                             h1: ({node, className, ...props}) => <h1 className="text-lg font-bold mt-4 mb-2 first:mt-0" {...props} />,
                                                             h2: ({node, className, ...props}) => <h2 className="text-base font-bold mt-3 mb-2 first:mt-0" {...props} />,
                                                             h3: ({node, className, ...props}) => <h3 className="text-sm font-bold mt-2 mb-1 first:mt-0" {...props} />,
                                                             p: ({node, className, children, ...props}) => (
-                                                                <p className="mb-2 last:mb-0" {...props}>
+                                                                <p className="mb-1 last:mb-0" {...props}>
                                                                     {searchQuery && typeof children === 'string' ? highlightText(children, searchQuery) : children}
                                                                 </p>
                                                             ),
