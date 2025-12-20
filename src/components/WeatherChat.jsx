@@ -569,7 +569,7 @@ export default function WeatherChat() {
                                     <div className="flex items-start gap-2 w-full">
                                         {m.role === "agent" && (
                                             <div 
-                                                className="flex-shrink-0 p-1.5 rounded-full mt-1"
+                                                className="shrink-0 p-1.5 rounded-full mt-1"
                                                 style={{
                                                     backgroundColor: darkMode ? '#262626' : '#e5e5e5'
                                                 }}
@@ -647,7 +647,7 @@ export default function WeatherChat() {
                             <div className="flex justify-start">
                                 <div className="flex items-start gap-2">
                                     <div 
-                                        className="flex-shrink-0 p-1.5 rounded-full mt-1"
+                                        className="shrink-0 p-1.5 rounded-full mt-1"
                                         style={{
                                             backgroundColor: darkMode ? '#262626' : '#e5e5e5'
                                         }}
@@ -719,7 +719,7 @@ export default function WeatherChat() {
                                 onKeyDown={handleKeyDown}
                                 placeholder="Ask about the weather..."
                                 disabled={loading}
-                                className="w-full px-4 py-3 resize-none bg-transparent border-none text-sm focus:outline-none min-h-[60px] placeholder:transition-colors"
+                                className="w-full px-4 py-3 resize-none bg-transparent border-none text-sm focus:outline-none min-h-15 placeholder:transition-colors"
                                 style={{
                                     overflow: "hidden",
                                     color: darkMode ? '#ffffff' : '#000000'
