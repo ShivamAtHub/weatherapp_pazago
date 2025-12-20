@@ -25,6 +25,7 @@ This project was developed as part of a frontend engineering assignment and focu
 - Tailwind CSS
 - React Router
 - Fetch API
+- Vitest
 
 
 ## PROJECT STRUCTURE
@@ -38,6 +39,7 @@ src/\
 └── package.json\
 
 App.jsx is intentionally kept minimal and handles routing only, while WeatherChat.jsx contains all chat-related logic and UI.
+> Basic UI-level tests are included alongside components using Vitest.
 
 
 **Design decision:**
@@ -59,6 +61,15 @@ REQUEST BODY
 - No authentication or API key is required
 - The API returns a non-streaming JSON response
 - This endpoint works correctly when tested via Postman
+
+
+## TESTING
+
+Basic automated tests are included to verify core UI behavior:
+- Chat input renders correctly
+- Send button is disabled for empty messages
+
+Tests are implemented using Vitest and React Testing Library.
 
 
 ## RUNNING THE PROJECT LOCALLY
@@ -95,6 +106,7 @@ This project demonstrates:
 - Proper handling of unstable or ambiguous APIs
 - Real-world understanding of CORS and browser security
 - UI and UX decisions appropriate for a scoped engineering assignment
+- Includes optional enhancements such as chat export, sound effects, message search, and basic UI testing.
 
 The implementation prioritizes clarity, correctness, and professionalism over unnecessary complexity.
 
