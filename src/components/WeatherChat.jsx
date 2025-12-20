@@ -440,7 +440,10 @@ export default function WeatherChat() {
                             }}
                             aria-label="Toggle sound"
                         >
-                            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                            {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" style={{
+                            backgroundColor: darkMode ? '#171717' : '#f5f5f5',
+                            color: darkMode ? '#f87171' : '#dc2626'
+                        }} />}
                         </button>
                         <button
                             onClick={exportChat}
